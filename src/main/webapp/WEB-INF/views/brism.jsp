@@ -9,28 +9,75 @@
     <link href="/css/animate.css" rel="stylesheet">
     <script src="https://code.jquery.com/jquery-3.4.1.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
     <title>Brism-Tennis</title>
+    <style>
+        html, body {
+            padding: 0;
+            margin: 0;
+        }
+    </style>
     <script>
-        $(document).ready(function() {
-           var socket = new WebSocket("ws://localhost:8080/api/socket/test1");
-           socket.onopen = function (ev) {
+        var data = null;
+        window.addEventListener('DOMContentLoaded', function() {
+            var socket = new WebSocket("ws://localhost:8080/test/test1");
+            socket.onopen = function (ev) {
+                console.log("Connected");
+            }
+            socket.onmessage = function (ev) {
+                console.log("Data Received");
+                console.log(ev.data);
+                data = JSON.parse(ev.data);
+                applyData();
+            }
 
-           }
-           socket.onmessage = function (ev) {
+            socket.onclose = function (ev) {
 
-           }
+            }
 
-           socket.onclose = function (ev) {
+            socket.onerror = function (ev) {
+                console.log("Socket Error");
+            }
 
-           }
-
-           socket.onerror = function (ev) {
-               console.log("Socket Error");
-           }
         });
+
+        function applyData() {
+
+            document.querySelectorAll("[data-id='game-name']").forEach(function (element) {
+                element.innerText = data.gameName;
+            });
+
+            document.querySelectorAll("[data-id='player1']").forEach(function (element) {
+                element.innerText = data.player1;
+            });
+            document.querySelectorAll("[data-id='player2']").forEach(function (element) {
+                element.innerText = data.player2;
+            });
+
+            document.querySelectorAll("[data-id='score1']").forEach(function (element) {
+                element.innerText = data.score1;
+            });
+            document.querySelectorAll("[data-id='score2']").forEach(function (element) {
+                element.innerText = data.score2;
+            });
+            document.querySelectorAll("[data-id='set-score1']").forEach(function (element) {
+                element.innerText = data.setScore1;
+            });
+            document.querySelectorAll("[data-id='set-score2']").forEach(function (element) {
+                element.innerText = data.setScore2;
+            });
+            document.querySelectorAll("[data-id='message']").forEach(function (element) {
+                element.innerText = data.message;
+            });
+
+            document.querySelectorAll("div.brism-display-layout").forEach(function (element) {
+                element.style.display = 'none';
+            });
+
+            document.querySelector("#" + data.templateId).style.display = 'block';
+        }
     </script>
 </head>
 <body>
-<div class="brism-h-100" style="margin-top: 2rem">
+<div class="brism-h-100">
     <!--<div class="brism-display-layout brism-font-weight-bold" style="background-color:#343a40;color:#ffffff;"-->
     <!--data-v-3fdfbd73="" data-v-13838786="">-->
     <!--<div class="brism-card brism-border-0" data-v-3fdfbd73="">-->

@@ -4,6 +4,7 @@ import java.util.Map;
 
 public class SocketData
 {
+    public String clientId;
     public String templateId;
     public String gameName;
     public String player1;
@@ -25,6 +26,14 @@ public class SocketData
         this.score1 = (Integer) params.get("score1");
         this.score2 = (Integer) params.get("score2");
 
+    }
+
+    public String getClientId() {
+        return clientId;
+    }
+
+    public void setClientId(String clientId) {
+        this.clientId = clientId;
     }
 
     public String getTemplateId() {

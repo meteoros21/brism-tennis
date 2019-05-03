@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import javax.websocket.server.PathParam;
 
 @Controller
-public class AdminController
+public class ViewController
 {
     @GetMapping("/admin")
     public String operation()

@@ -33,6 +33,7 @@
 
         function applyData() {
             var form = document.forms['dataForm'];
+            data.clientId = 'test1';
             data.gameName = form['gameName'].value;
             data.player1 = form['player1'].value;
             data.player2 = form['player2'].value;
@@ -75,7 +76,6 @@
 
             document.querySelector("#" + data.templateId).style.display = 'block';
 
-            alert(JSON.stringify(data));
             $.ajax({
                 url: 'http://localhost:8080/brism/update-data',
                 type: 'POST',
