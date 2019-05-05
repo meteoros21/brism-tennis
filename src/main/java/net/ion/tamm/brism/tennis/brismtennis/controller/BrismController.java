@@ -2,6 +2,7 @@ package net.ion.tamm.brism.tennis.brismtennis.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import net.ion.tamm.brism.tennis.brismtennis.data.SocketData;
+import net.ion.tamm.brism.tennis.brismtennis.data.SocketDataManager;
 import net.ion.tamm.brism.tennis.brismtennis.websocket.SocketDataEndPoint;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -19,7 +20,8 @@ public class BrismController
         ObjectMapper mapper = new ObjectMapper();
         SocketData data = mapper.readValue(reqData, SocketData.class);
 
-        // String clientId = data.clientId;
+        SocketDataManager manager = SocketDataManager.getInstance();
+        manager.setData(data.clientId, data);
 
         SocketDataEndPoint.sendData(data);
 

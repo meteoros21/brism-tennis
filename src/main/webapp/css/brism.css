@@ -1191,8 +1191,9 @@ a.brism-text-dark:hover, a.brism-text-dark:focus {
 
 .brism-display-layout {
   position: relative;
-  width: 600px;
+  width: 480px;
   height: 120px;
+  overflow: hidden;
 }
 
 .brism-display-layout > div {
@@ -1201,9 +1202,9 @@ a.brism-text-dark:hover, a.brism-text-dark:focus {
   height: 100%;
 }
 
-.brism-display-layout + .brism-display-layout {
-  margin: 10px 0px;
-}
+/*.brism-display-layout + .brism-display-layout {*/
+  /*margin: 10px 0px;*/
+/*}*/
 
 .brism-display-count {
   display: inline-block;

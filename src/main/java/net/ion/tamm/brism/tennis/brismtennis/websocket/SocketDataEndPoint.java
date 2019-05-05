@@ -3,8 +3,7 @@ package net.ion.tamm.brism.tennis.brismtennis.websocket;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import net.ion.tamm.brism.tennis.brismtennis.data.SocketData;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.socket.config.annotation.EnableWebSocket;
+import net.ion.tamm.brism.tennis.brismtennis.data.SocketDataManager;
 
 import javax.websocket.*;
 import javax.websocket.server.PathParam;
@@ -25,19 +24,24 @@ public class SocketDataEndPoint
         String test2 = "" + test1;
     }
 
-//    @Override
-//    public void onOpen(Session session, EndpointConfig endpointConfig)
-//    {
-//        int test1 = 123;
-//        String test2 = "" + test1;
-//    }
-
     @OnOpen
     public void onOpen(Session session, @PathParam("clientId") String clientId)
     {
         this.session = session;
         this.clientId = clientId;
         endPoints.add(this);
+
+        SocketDataManager manager = SocketDataManager.getInstance();
+        SocketData socketData = (SocketData)manager.getData(clientId);
+
+        if (socketData != null)
+        {
+            try {
+                SocketDataEndPoint.sendData(socketData);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     @OnMessage

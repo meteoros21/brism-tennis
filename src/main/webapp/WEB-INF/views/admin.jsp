@@ -4,62 +4,275 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <link href="/css/common.css" rel="stylesheet">
-    <link href="/css/brism.css" rel="stylesheet">
+    <link href="/css/common.css?v=124" rel="stylesheet">
+    <link href="/css/brism2.css?v=123" rel="stylesheet">
     <link href="/css/animate.css" rel="stylesheet">
-    <script src="https://code.jquery.com/jquery-3.4.1.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
     <title>Brism-Tennis</title>
     <script>
         var data = {
+            clientId: '${clientId}',
             gameName: '',
             templateId: 'template-ready',
-            player1: 'AWARY',
-            player2: 'HOME',
+            player11: '플레이어1',
+            player12: '플레이어2',
+            player21: '플레이어1',
+            player22: '플레이어2',
             score1: 0,
             score2: 0,
+            setNo: 1,
+            scoreInSet1: [],
+            scoreInSet2: [],
             setScore1: 0,
             setScore2: 0,
+            serve: '',
             message: ''
         };
+        window.addEventListener('DOMContentLoaded', function() {
+            var buttons = document.querySelectorAll('.screen');
+            for (var button of buttons)
+            {
+                button.addEventListener('click', function (evt) {
+                    var element = evt.target;
 
-        $(document).ready(function () {
-            $('.screen').on('click', function (e) {
-                data.templateId = $(this).attr('data-template');
-                $('.screen').removeClass('active');
-                $(this).addClass('active');
-                applyData();
-            })
+                    data.templateId = element.getAttribute('data-template');
+
+                    removeClass(document.querySelector('button.screen.active'), 'active');
+                    addClass(element, 'active');
+
+                    applyData();
+                });
+            }
+
+            buttons = document.querySelectorAll('button.serve');
+            for (var button of buttons)
+            {
+                button.addEventListener('click', function (evt) {
+
+                    removeClass(document.querySelector('button.serve.active'), 'active');
+                    addClass(evt.target, 'active');
+
+                    data.serve = evt.target.getAttribute('id');
+                    applyData();
+                })
+            }
+
+            buttons = document.querySelectorAll('[name="set-no"]');
+            for (var button of buttons) {
+                button.addEventListener('change', function (evt) {
+                    var form = document.forms['dataForm'];
+                    var val = parseInt(form['set-no'].value);
+
+                    form['score-in-set1'][val-1].value = '0';
+                    form['score-in-set2'][val-1].value = '0';
+
+                    for (var i = val; i < 5; i++)
+                    {
+                        form['score-in-set1'][i].value = '';
+                        form['score-in-set2'][i].value = '';
+                    }
+
+                    form['score1'].value = 0;
+                    form['score2'].value = 0;
+
+                    form['point1'].value = 0;
+                    form['point2'].value = 0;
+
+                    applyData();
+                });
+            }
+
+            buttons = document.querySelectorAll('[name="score1"]');
+            for (var button of buttons)
+            {
+                button.addEventListener('change', function (evt) {
+
+                    var form = document.forms['dataForm'];
+                    var val = form.score1.value;
+
+                    form['point1'].value = val;
+
+                    if (val == 'W')
+                    {
+                        var setNo = parseInt(form['set-no'].value);
+                        form['score-in-set1'][setNo-1].value = parseInt(form['score-in-set1'][setNo-1].value) + 1;
+
+                        form['score1'].value = 0;
+                        form['score2'].value = 0;
+                        form['point1'].value = 0;
+                        form['point2'].value = 0;
+
+                        setAttacker(setNo+1);
+                    }
+
+                    applyData();
+                });
+            }
+
+            buttons = document.querySelectorAll('[name="score2"]');
+            for (var button of buttons)
+            {
+                button.addEventListener('change', function (evt) {
+
+                    var form = document.forms['dataForm'];
+                    var val = form.score2.value;
+
+                    form['point2'].value = val;
+
+                    if (val == 'W')
+                    {
+                        var setNo = parseInt(form['set-no'].value);
+                        form['score-in-set2'][setNo-1].value = parseInt(form['score-in-set2'][setNo-1].value) + 1;
+
+                        form['score1'].value = 0;
+                        form['score2'].value = 0;
+                        form['point1'].value = 0;
+                        form['point2'].value = 0;
+
+                        setAttacker(setNo+1);
+                    }
+
+                    applyData();
+                });
+            }
         });
+
+        function setAttacker(setNo)
+        {
+            var element1 = document.querySelector('#brism-scores1');
+            var element2 = document.querySelector('#brism-scores2');
+
+            var test = setNo % 2;
+            if ((setNo % 2) == 0)
+            {
+                removeClass(element1, 'active');
+                addClass(element2, 'active');
+            }
+            else
+            {
+                removeClass(element2, 'active');
+                addClass(element1, 'active');
+            }
+        }
+
+        function addClass(element, className)
+        {
+            if (element == null)
+                return;
+
+            var classNameList = element.className.split(" ");
+            if (classNameList.indexOf(className) == -1)
+            {
+                element.className += ' ' + className;
+            }
+        }
+
+        function removeClass(element, className)
+        {
+            if (element == null)
+                return;
+
+            var className = element.className.split(className).join('');
+            element.className = className
+        }
 
         function applyData() {
             var form = document.forms['dataForm'];
-            data.clientId = 'test1';
             data.gameName = form['gameName'].value;
-            data.player1 = form['player1'].value;
-            data.player2 = form['player2'].value;
+            data.player11 = form['player11'].value;
+            data.player12 = form['player12'].value;
+            data.player21 = form['player21'].value;
+            data.player22 = form['player22'].value;
             data.score1 = form['score1'].value;
             data.score2 = form['score2'].value;
-            data.setScore1 = form['setScore1'].value;
-            data.setScore2 = form['setScore2'].value;
+            data.point1 = data.score1;
+            data.point2 = data.score2;
+            data.setNo = form['set-no'].value;
+
+            data.scoreInSet1 = new Array();
+            for (var i = 0; i < 5; i++)
+                data.scoreInSet1.push(form['score-in-set1'][i].value);
+            data.scoreInSet2 = new Array();
+            for (var i = 0; i < 5; i++)
+                data.scoreInSet2.push(form['score-in-set2'][i].value);
+
+            data.setScore1 = 0;
+            data.setScore2 = 0;
+
+            for (var i = 0; i < parseInt(data.setNo); i++)
+            {
+                var score1 = parseInt(data.scoreInSet1[i]);
+                var score2 = parseInt(data.scoreInSet2[i]);
+
+                if (score1 > score2)
+                    data.setScore1++;
+                else if (score1 < score2)
+                    data.setScore2++;
+            }
+
             data.message = form['message'].value;
 
             document.querySelectorAll("[data-id='game-name']").forEach(function (element) {
                 element.innerText = data.gameName;
             });
 
-            document.querySelectorAll("[data-id='player1']").forEach(function (element) {
-                element.innerText = data.player1;
+            document.querySelectorAll("[data-id='player11']").forEach(function (element) {
+                element.innerText = data.player11;
             });
-            document.querySelectorAll("[data-id='player2']").forEach(function (element) {
-                element.innerText = data.player2;
+            document.querySelectorAll("[data-id='player12']").forEach(function (element) {
+                element.innerText = data.player12;
+            });
+            document.querySelectorAll("[data-id='player21']").forEach(function (element) {
+                element.innerText = data.player21;
+            });
+            document.querySelectorAll("[data-id='player22']").forEach(function (element) {
+                element.innerText = data.player22;
             });
 
-            document.querySelectorAll("[data-id='score1']").forEach(function (element) {
-                element.innerText = data.score1;
+            document.querySelectorAll("[data-id='point1']").forEach(function (element) {
+                element.innerText = data.point1;
             });
-            document.querySelectorAll("[data-id='score2']").forEach(function (element) {
-                element.innerText = data.score2;
+            document.querySelectorAll("[data-id='point2']").forEach(function (element) {
+                element.innerText = data.point2;
             });
+            document.querySelectorAll("[data-id='set-no']").forEach(function (element) {
+                element.innerText = data.setNo;
+            });
+
+
+            document.querySelectorAll("[data-id='score1-in-set1']").forEach(function (element) {
+                element.innerText = data.scoreInSet1[0];
+            });
+            document.querySelectorAll("[data-id='score1-in-set2']").forEach(function (element) {
+                element.innerText = data.scoreInSet1[1];
+            });
+            document.querySelectorAll("[data-id='score1-in-set3']").forEach(function (element) {
+                element.innerText = data.scoreInSet1[2];
+            });
+            document.querySelectorAll("[data-id='score1-in-set4']").forEach(function (element) {
+                element.innerText = data.scoreInSet1[3];
+            });
+            document.querySelectorAll("[data-id='score1-in-set5']").forEach(function (element) {
+                element.innerText = data.scoreInSet1[4];
+            });
+
+
+            document.querySelectorAll("[data-id='score2-in-set1']").forEach(function (element) {
+                element.innerText = data.scoreInSet2[0];
+            });
+            document.querySelectorAll("[data-id='score2-in-set2']").forEach(function (element) {
+                element.innerText = data.scoreInSet2[1];
+            });
+            document.querySelectorAll("[data-id='score2-in-set3']").forEach(function (element) {
+                element.innerText = data.scoreInSet2[2];
+            });
+            document.querySelectorAll("[data-id='score2-in-set4']").forEach(function (element) {
+                element.innerText = data.scoreInSet2[3];
+            });
+            document.querySelectorAll("[data-id='score2-in-set5']").forEach(function (element) {
+                element.innerText = data.scoreInSet2[4];
+            });
+
+
             document.querySelectorAll("[data-id='set-score1']").forEach(function (element) {
                 element.innerText = data.setScore1;
             });
@@ -70,19 +283,43 @@
                 element.innerText = data.message;
             });
 
-            document.querySelectorAll("div.brism-display-layout").forEach(function (element) {
+            document.querySelectorAll("div.brism-sign-board").forEach(function (element) {
                 element.style.display = 'none';
             });
 
-            document.querySelector("#" + data.templateId).style.display = 'block';
-
-            $.ajax({
-                url: 'http://localhost:8080/brism/update-data',
-                type: 'POST',
-                data: JSON.stringify(data),
-                contentType: "application/json",
-                returnType: "application/json"
+            document.querySelectorAll('.serve-player').forEach(function (element) {
+                removeClass(element, 'active');
             })
+            document.querySelectorAll('[data-id="' + data.serve + '"]').forEach(function (element) {
+                addClass(element, 'active');
+            })
+
+            if (data.templateId == 'template-score' || data.templateId == 'template-closed')
+            {
+                if (data.player12 == '' && data.player22 == '')
+                    document.querySelector("#" + data.templateId + "1").style.display = 'block';
+                else
+                    document.querySelector("#" + data.templateId + "2").style.display = 'block';
+            }
+            else
+            {
+                document.querySelector("#" + data.templateId).style.display = 'block';
+            }
+
+            var option = {
+                method: 'POST',
+                body: JSON.stringify(data)
+            }
+            fetch('http://localhost:8080/brism/update-data', option)
+                .then(function (response) {
+                    return response.json();
+                })
+                .then(function (result) {
+                    if (result.result != true)
+                    {
+                        alert('Fail to send data to server');
+                    }
+                });
         }
     </script>
 </head>
@@ -90,26 +327,77 @@
 <div class="container">
     <div class="doc-container">
         <div class="form-wrapper">
-            <form name="dataForm" method="post">
+            <form name="dataForm">
                 <h2>BRISM - Tennis V0.1</h2>
+
                 <p class="label">Game Name</p>
-                <input type="text" name="gameName" placeholder="Game Name">
+                <input type="text" name="gameName" placeholder="Game Name" value="제 12회 전국 직장인 테니스 대회">
                 <p id="errorGameName" class="error" style="display: none">게임 이름은 누락될 수 없습니다.</p>
 
-                <p class="label">Players</p>
-                <input type="text" name="player1" placeholder="Player Name">
-                <input type="text" name="player2" placeholder="Player Name">
-                <p id="errorPlayer" class="error" style="display: none">플레이어 이름은 누락될 수 없습니다.</p>
+                <p class="label">Players and Scores</p>
+                <table style="width: 100%; text-align: center">
+                    <tr style="font-size: 12px">
+                        <td>Player1</td>
+                        <td>Player2</td>
+                        <td style="width: 50px">Point</td>
+                        <td style="width: 50px">1set</td>
+                        <td style="width: 50px">2set</td>
+                        <td style="width: 50px">3set</td>
+                        <td style="width: 50px">4set</td>
+                        <td style="width: 50px">5set</td>
+                    </tr>
+                    <tr>
+                        <td><input type="text" name="player11" placeholder="Player Name" value="홍길동" style="margin: 0; width: 80%"><button
+                                id="serve11" type="button" class="serve">S</button></td>
+                        <td><input type="text" name="player12" placeholder="Player Name" value="신사임당" style="margin: 0; width: 80%"><button
+                                id="serve12" type="button" class="serve">S</button></td>
+                        <td><input type="text" name="point1"></td>
+                        <td><input type="text" name="score-in-set1"></td>
+                        <td><input type="text" name="score-in-set1"></td>
+                        <td><input type="text" name="score-in-set1"></td>
+                        <td><input type="text" name="score-in-set1"></td>
+                        <td><input type="text" name="score-in-set1"></td>
+                    </tr>
+                    <tr>
+                        <td><input type="text" name="player21" placeholder="Player Name" value="임꺽정" style="margin: 0; width: 80%"><button
+                                id="serve21" type="button" class="serve">S</button></td>
+                        <td><input type="text" name="player22" placeholder="Player Name" value="허난설헌" style="margin: 0; width: 80%"><button
+                                id="serve22" type="button" class="serve">S</button></td>
+                        <td><input type="text" name="point2" ></td>
+                        <td><input type="text" name="score-in-set2"></td>
+                        <td><input type="text" name="score-in-set2"></td>
+                        <td><input type="text" name="score-in-set2"></td>
+                        <td><input type="text" name="score-in-set2"></td>
+                        <td><input type="text" name="score-in-set2"></td>
+                    </tr>
+                </table>
 
                 <p class="label">Score</p>
-                <input type="text" name="score1" placeholder="Score" value="0">
-                <input type="text" name="score2" placeholder="Score" value="0">
-                <p id="errorScore" class="error" style="display: none">스코어는 누락될 수 없습니다.</p>
+                <div style="display: inline-block; width: 48%">
+                    <input id="r1" name="score1" type="radio" class="score" value="0" checked="checked"><label for="r1">0</label>
+                    <input id="r2" name="score1" type="radio" class="score" value="15"><label for="r2">15</label>
+                    <input id="r3" name="score1" type="radio" class="score" value="30"><label for="r3">30</label>
+                    <input id="r4" name="score1" type="radio" class="score" value="40"><label for="r4">40</label>
+                    <input id="r5" name="score1" type="radio" class="score" value="A"><label for="r5">A</label>
+                    <input id="rwin1" name="score1" type="radio" class="score" value="W"><label for="rwin1">W</label>
+                </div>
+                <div style="display: inline-block; width: 48%">
+                    <input id="r6" name="score2" type="radio" class="score" value="0" checked="checked"><label for="r6">0</label>
+                    <input id="r7" name="score2" type="radio" class="score" value="15"><label for="r7">15</label>
+                    <input id="r8" name="score2" type="radio" class="score" value="30"><label for="r8">30</label>
+                    <input id="r9" name="score2" type="radio" class="score" value="40"><label for="r9">40</label>
+                    <input id="r10" name="score2" type="radio" class="score" value="A"><label for="r10">A</label>
+                    <input id="rwin2" name="score2" type="radio" class="score" value="W"><label for="rwin2">W</label>
+                </div>
 
-                <p class="label">Set Score</p>
-                <input type="text" name="setScore1" placeholder="Set Score" value="0">
-                <input type="text" name="setScore2" placeholder="Set Score" value="0">
-                <p id="errorSetScore" class="error" style="display: none">세트 스코어는 누락될 수 없습니다.</p>
+                <p class="label">Set</p>
+                <div style="display: inline-block; width: 48%">
+                    <input id="r11" name="set-no" type="radio" class="score" value="1"><label for="r11">1</label>
+                    <input id="r12" name="set-no" type="radio" class="score" value="2"><label for="r12">2</label>
+                    <input id="r13" name="set-no" type="radio" class="score" value="3"><label for="r13">3</label>
+                    <input id="r14" name="set-no" type="radio" class="score" value="4"><label for="r14">4</label>
+                    <input id="r15" name="set-no" type="radio" class="score" value="5"><label for="r15">5</label>
+                </div>
 
                 <p class="label">Message</p>
                 <input type="text" name="message" placeholder="Message">
@@ -124,191 +412,132 @@
             </form>
         </div>
         <div class="brism-h-100" style="margin-top: 2rem">
-            <!--<div class="brism-display-layout brism-font-weight-bold" style="background-color:#343a40;color:#ffffff;"-->
-            <!--data-v-3fdfbd73="" data-v-13838786="">-->
-            <!--<div class="brism-card brism-border-0" data-v-3fdfbd73="">-->
-            <!--<div class="brism-card-header brism-p-2 brism-border-bottom" data-v-3fdfbd73="">-->
-            <!--<div class="brism-float-left" data-v-3fdfbd73="">0000.00.00 00:00</div>-->
-            <!--<div class="brism-float-right" data-v-3fdfbd73="">2019-05-01 16:41:49</div>-->
-            <!--</div>-->
-            <!--<div class="brism-card-body brism-p-1" data-v-3fdfbd73="">-->
-            <!--<div class="brism-text-center brism-d-flex" data-v-3fdfbd73="">-->
-            <!--<div class="brism-d-inline-flex brism-justify-content-end brism-align-items-center brism-flex-2"-->
-            <!--data-v-3fdfbd73="">-->
-            <!--<div class="brism-display-team-text brism-text-truncate brism-px-2"-->
-            <!--data-v-3fdfbd73="">AWAY TEAM-->
-            <!--</div>-->
-            <!--<img src="img/team/none.png" class="brism-display-team-emblem brism-px-2"-->
-            <!--data-v-3fdfbd73=""></div>-->
-            <!--<div class="brism-d-inline-flex brism-justify-content-center brism-align-items-center brism-flex-1"-->
-            <!--data-v-3fdfbd73="">-->
-            <!--vs-->
-            <!--</div>-->
-            <!--<div class="brism-d-inline-flex brism-justify-content-start brism-align-items-center brism-flex-2"-->
-            <!--data-v-3fdfbd73=""><img src="img/team/none.png"-->
-            <!--class="brism-display-team-emblem brism-px-2"-->
-            <!--data-v-3fdfbd73="">-->
-            <!--<div class="brism-display-team-text brism-text-truncate brism-px-2"-->
-            <!--data-v-3fdfbd73="">HOME TEAM-->
-            <!--</div>-->
-            <!--</div>-->
-            <!--</div>-->
-            <!--</div>-->
-            <!--</div>-->
-            <!--</div>-->
-            <div id="template-score" class="brism-display-layout brism-font-weight-bold" style="background-color:#343a40;color:#ffffff;display: none">
-                <div class="brism-card brism-border-0" data-v-1963e0f4="">
-                    <div class="brism-card-header brism-p-2 brism-border-bottom" data-v-1963e0f4="">
-                        <div class="brism-float-left"><span data-id="game-name">게임명</span> - <span data-id="set-no">1</span><span> 세트</span></div>
-                        <div class="brism-float-right">
-                            <div class="brism-display-counts"></div>
+            <div id="template-score1" class="brism-sign-board" style="display: none">
+                <div class="flex-container">
+                    <div class="table">
+                        <div class="row header">
+                            <div class="cell point-header">points</div>
+                            <div class="cell">Players</div>
+                            <div class="cell score-header">1</div>
+                            <div class="cell score-header">2</div>
+                            <div class="cell score-header">3</div>
+                            <div class="cell score-header">4</div>
+                            <div class="cell score-header">5</div>
                         </div>
-                    </div>
-                    <div class="brism-card-body brism-p-1">
-                        <div class="brism-text-center brism-d-flex">
-                            <div class="brism-d-inline-flex brism-justify-content-end brism-align-items-center brism-flex-2">
-                                <div active="true" class="brism-display-team-text brism-text-truncate brism-px-2" data-id="player1">AWAY TEAM</div>
-                            </div>
-                            <div class="brism-d-inline-flex brism-justify-content-center brism-align-items-center brism-flex-1">
-                                <span active="true" class="brism-display-team-r"  data-id="score1">15</span>
-                                <span active="true" style="margin: 0 15px" data-id="set-score1">1</span>
-                                <span>VS</span>
-                                <span active="false" style="margin: 0 15px"  data-id="set-score2">0</span>
-                                <span active="false" class="brism-display-team-r"  data-id="score2">15</span>
-                            </div>
-                            <div class="brism-d-inline-flex brism-justify-content-start brism-align-items-center brism-flex-2">
-                                <div active="false" class="brism-display-team-text brism-text-truncate brism-px-2" id="player2" data-id="player2">HOME TEAM</div>
-                            </div>
+                        <div class="row">
+                            <div class="cell border-top point" data-id="point1">15</div>
+                            <div class="cell border-top name1"><span id="server11" class="serve-player active" data-id="serve11"></span><span data-id="player11">홍길동</span></div>
+                            <div class="cell border-top score" data-id="score1-in-set1">6</div>
+                            <div class="cell border-top score" data-id="score1-in-set2">4</div>
+                            <div class="cell border-top score" data-id="score1-in-set3">-</div>
+                            <div class="cell border-top score" data-id="score1-in-set4">-</div>
+                            <div class="cell border-top score" data-id="score1-in-set5">-</div>
+                        </div>
+                        <div class="row">
+                            <div class="cell border-top point" data-id="point2">15</div>
+                            <div class="cell border-top name1"><span id="server21" class="serve-player" data-id="serve21"></span><span data-id="player21">임꺽정</span></div>
+                            <div class="cell border-top score" data-id="score2-in-set1">4</div>
+                            <div class="cell border-top score" data-id="score2-in-set2">3</div>
+                            <div class="cell border-top score" data-id="score2-in-set3">-</div>
+                            <div class="cell border-top score" data-id="score2-in-set4">-</div>
+                            <div class="cell border-top score" data-id="score2-in-set5">-</div>
                         </div>
                     </div>
                 </div>
             </div>
-            <div id="template-closed" class="brism-display-layout brism-font-weight-bold" style="background-color:#343a40;color:#ffffff;display: none">
-                <div class="brism-card brism-border-0">
-                    <div class="brism-card-header brism-p-2 brism-border-bottom"><span class="brism-d-block brism-text-center">경기가 종료되었습니다.</span></div>
-                    <div class="brism-card-body brism-p-1">
-                        <div class="brism-text-center brism-d-flex">
-                            <div class="brism-d-inline-flex brism-justify-content-end brism-align-items-center brism-flex-2">
-                                <div class="brism-display-team-text brism-text-truncate brism-px-2" data-id="player1">AWAY TEAM</div>
-                            </div>
-                            <div class="brism-d-inline-flex brism-justify-content-center brism-align-items-center brism-flex-1">
-                                <span class="brism-display-team-r" data-id="set-score1">3</span>
-                                <span>VS</span>
-                                <span class="brism-display-team-r" data-id="set-score2">0</span>
-                            </div>
-                            <div class="brism-d-inline-flex brism-justify-content-start brism-align-items-center brism-flex-2">
-                                <div class="brism-display-team-text brism-text-truncate brism-px-2" data-id="player2">HOME TEAM</div>
-                            </div>
+            <div id="template-score2" class="brism-sign-board" style="display: none">
+                <div class="flex-container">
+                    <div class="table">
+                        <div class="row header">
+                            <div class="cell point-header">points</div>
+                            <div class="cell">Players</div>
+                            <div class="cell"></div>
+                            <div class="cell score-header">1</div>
+                            <div class="cell score-header">2</div>
+                            <div class="cell score-header">3</div>
+                            <div class="cell score-header">4</div>
+                            <div class="cell score-header">5</div>
+                        </div>
+                        <div class="row">
+                            <div class="cell border-top point" data-id="point1">15</div>
+                            <div class="cell border-top name2"><span class="serve-player active" data-id="serve11"></span><span data-id="player11">홍길동</span></div>
+                            <div class="cell border-top name3"><span class="serve-player" data-id="serve12"></span><span data-id="player12">홍길동</span></div>
+                            <div class="cell border-top score" data-id="score1-in-set1">6</div>
+                            <div class="cell border-top score" data-id="score1-in-set2">4</div>
+                            <div class="cell border-top score" data-id="score1-in-set3">-</div>
+                            <div class="cell border-top score" data-id="score1-in-set4">-</div>
+                            <div class="cell border-top score" data-id="score1-in-set5">-</div>
+                        </div>
+                        <div class="row" style="border-top: 1px solid white">
+                            <div class="cell border-top point" data-id="point2">15</div>
+                            <div class="cell border-top name2"><span class="serve-player" data-id="serve21"></span><span data-id="player21">임꺽정</span></div>
+                            <div class="cell border-top name3"><span class="serve-player" data-id="serve22"></span><span data-id="player22">신사임당</span></div>
+                            <div class="cell border-top score" data-id="score2-in-set1">4</div>
+                            <div class="cell border-top score" data-id="score2-in-set2">3</div>
+                            <div class="cell border-top score" data-id="score2-in-set3">-</div>
+                            <div class="cell border-top score" data-id="score2-in-set4">-</div>
+                            <div class="cell border-top score" data-id="score2-in-set5">-</div>
                         </div>
                     </div>
                 </div>
             </div>
-            <!--<div class="brism-display-layout brism-font-weight-bold" style="background-color:#343a40;color:#ffffff;"-->
-            <!--data-v-4f92b498="" data-v-13838786="">-->
-            <!--<div class="brism-card brism-border-0" data-v-4f92b498="">-->
-            <!--<div class="brism-card-body brism-p-1" data-v-4f92b498="">-->
-            <!--<div class="brism-text-center brism-d-flex" data-v-4f92b498="">-->
-            <!--<div class="brism-d-inline-flex brism-justify-content-center brism-align-items-center brism-flex-1"-->
-            <!--data-v-4f92b498=""><span class="brism-display-inning-big"-->
-            <!--data-v-4f92b498="">0</span>-->
-            <!--<div class="brism-display-groupCodes-big" data-v-4f92b498=""><i active="true"-->
-            <!--class="brism-display-groupCodes-true-big"-->
-            <!--data-v-4f92b498=""></i>-->
-            <!--<i active="false" class="brism-display-groupCodes-false-big"-->
-            <!--data-v-4f92b498=""></i></div>-->
-            <!--</div>-->
-            <!--<div class="brism-d-inline-flex brism-justify-content-center brism-align-items-center brism-flex-1"-->
-            <!--data-v-4f92b498=""><img src="img/team/none.png"-->
-            <!--class="brism-display-team-emblem brism-px-2"-->
-            <!--data-v-4f92b498="">-->
-            <!--<div class="brism-display-team-text brism-text-truncate brism-px-2"-->
-            <!--data-v-4f92b498="">TEAM-->
-            <!--</div>-->
-            <!--</div>-->
-            <!--<div class="brism-d-inline-flex brism-justify-content-center brism-align-items-center brism-flex-2"-->
-            <!--data-v-4f92b498="">-->
-            <!--<div class="brism-display-batter-list" data-v-4f92b498=""><span data-v-4f92b498="">다음타자가 없습니다.</span>-->
-            <!--</div>-->
-            <!--</div>-->
-            <!--</div>-->
-            <!--</div>-->
-            <!--</div>-->
-            <!--</div>-->
-            <!--<div class="brism-display-layout brism-font-weight-bold" style="background-color:#343a40;color:#ffffff;"-->
-            <!--data-v-a726fffa="" data-v-13838786="">-->
-            <!--<div class="brism-card brism-border-0" data-v-a726fffa="">-->
-            <!--<div class="brism-card-body brism-p-1" data-v-a726fffa="">-->
-            <!--<div class="brism-text-center brism-d-flex" data-v-a726fffa="">-->
-            <!--<div class="brism-display-batter-header brism-d-inline-flex brism-flex-column brism-justify-content-center brism-align-items-center brism-flex-1 brism-border-right"-->
-            <!--data-v-a726fffa=""><span data-v-a726fffa="">0</span> <span-->
-            <!--class="brism-text-writing-mode-vertical-lr" data-v-a726fffa="">번타자</span></div>-->
-            <!--<div class="brism-d-inline-flex brism-justify-content-center brism-align-items-center brism-flex-6"-->
-            <!--data-v-a726fffa="">-->
-            <!--<div class="brism-display-batter-name brism-text-truncate brism-px-2"-->
-            <!--data-v-a726fffa="">PLAYER-->
-            <!--</div>-->
-            <!--<div class="brism-display-batter-number brism-px-2" data-v-a726fffa="">00</div>-->
-            <!--<img src="/brism/images/batter/none.png"-->
-            <!--class="brism-display-batter-profile-img brism-rounded-circle brism-mx-2"-->
-            <!--data-v-a726fffa=""></div>-->
-            <!--</div>-->
-            <!--</div>-->
-            <!--</div>-->
-            <!--</div>-->
-            <!--<div class="brism-display-layout brism-font-weight-bold" style="background-color:#343a40;color:#ffffff;"-->
-            <!--data-v-690be1e8="" data-v-13838786="">-->
-            <!--<div class="brism-card brism-border-0" data-v-690be1e8="">-->
-            <!--<div class="brism-card-body brism-p-1" data-v-690be1e8="">-->
-            <!--<div class="brism-text-center brism-d-flex" data-v-690be1e8="">-->
-            <!--<div class="brism-display-batter-header brism-d-inline-flex brism-flex-column brism-justify-content-center brism-align-items-center brism-flex-1 brism-border-right"-->
-            <!--data-v-690be1e8=""><span data-v-690be1e8="">0</span> <span-->
-            <!--class="brism-text-writing-mode-vertical-lr" data-v-690be1e8="">번타자</span></div>-->
-            <!--<div class="brism-d-inline-flex brism-justify-content-center brism-align-items-center brism-flex-6"-->
-            <!--data-v-690be1e8="">-->
-            <!--<div class="brism-display-batter-name brism-text-truncate brism-px-2"-->
-            <!--data-v-690be1e8="">PLAYER-->
-            <!--</div>-->
-            <!--<div class="brism-display-batter-number brism-px-2" data-v-690be1e8="">00</div>-->
-            <!--<div class="brism-display-record-name brism-rounded-circle brism-d-flex brism-border brism-justify-content-center brism-align-items-center brism-text-truncate brism-mx-2"-->
-            <!--data-v-690be1e8="">기록-->
-            <!--</div>-->
-            <!--</div>-->
-            <!--</div>-->
-            <!--</div>-->
-            <!--</div>-->
-            <!--</div>-->
-            <div id="template-message" class="brism-display-layout brism-font-weight-bold" style="background-color:#343a40;color:#ffffff; display: none">
-                <div class="brism-card brism-border-0">
-                    <div class="brism-card-body brism-p-2">
-                        <div class="brism-text-center brism-d-flex">
-                            <div class="brism-text-default"><marquee direction="left" data-id="message" style="width: 100%; height:120px; white-space: nowrap; font-size: 4rem; color: white">TEXT</marquee></div>
+            <div id="template-closed1" class="brism-sign-board" style="display: none">
+                <div class="brism-sign-title-bar">
+                    <div>게임이 종료되었습니다.</div>
+                </div>
+                <div class="flex-container" style="height: 90px">
+                    <div style="width: 47%; display: flex; align-items: center; justify-content: center">
+                        <div class="result-point" data-id="set-score1">3</div>
+                        <div class="result-name-group">
+                            <div class="result-name" style="text-align: right" data-id="player11">홍길동</div>
                         </div>
+                    </div>
+                    <div style="width: 6%">vs</div>
+                    <div style="width: 47%; display: flex; align-items: center; justify-content: center">
+                        <div class="result-name-group">
+                            <div class="result-name" data-id="player21">임꺽정</div>
+                        </div>
+                        <div class="result-point" data-id="set-score2">3</div>
                     </div>
                 </div>
             </div>
-            <div id="template-ready" class="brism-display-layout brism-font-weight-bold" style="background-color:#343a40;color:#ffffff; display: block">
-                <div class="brism-card brism-border-0">
-                    <div class="brism-card-body brism-p-0">
-                        <div class="brism-text-center brism-d-flex">
-                            <div style="width: 600px;height: 120px;overflow: hidden;display: flex;align-items: center;justify-content: center;">
-                                <img src="http://demo.tamm.io:8081/brism/images/ion/none.png" width="600" height="120"></div>
+            <div id="template-closed2" class="brism-sign-board" style="display: none">
+                <div class="brism-sign-title-bar">
+                    <div>게임이 종료되었습니다.</div>
+                </div>
+                <div class="flex-container" style="height: 90px">
+                    <div style="width: 47%; display: flex; align-items: center; justify-content: center">
+                        <div class="result-point" data-id="set-score1">3</div>
+                        <div class="result-name-group">
+                            <div class="result-name" style="text-align: right" data-id="player11">홍길동</div>
+                            <div class="result-name" style="text-align: right" data-id="player12">김순이 입니다요.</div>
                         </div>
+                    </div>
+                    <div style="width: 6%">vs</div>
+                    <div style="width: 47%; display: flex; align-items: center; justify-content: center">
+                        <div class="result-name-group">
+                            <div class="result-name" data-id="player21">임꺽정</div>
+                            <div class="result-name" data-id="player22">신사임당입니다</div>
+                        </div>
+                        <div class="result-point" data-id="set-score2">3</div>
                     </div>
                 </div>
             </div>
-            <div id="template-black" class="brism-display-layout brism-font-weight-bold" style="background-color:#343a40;color:#ffffff; display: none">
-                <div class="brism-card brism-border-0">
-                    <div class="brism-card-body brism-p-0">
-                        <div class="brism-text-center brism-d-flex">
-                            <div>
-                                <!--<video src="" width="600" height="120" loop="loop" style="object-fit: inherit;"></video>-->
-                            </div>
-                        </div>
+            <div id="template-ready" class="brism-sign-board" style="background-color: white; display: none">
+                <div class="flex-container">
+                    <img src="/img/none.png" style="width: 480px">
+                </div>
+            </div>
+            <div id="template-message" class="brism-sign-board" style="display: none">
+                <div class="flex-container">
+                    <div>
+                        <marquee direction="left" data-id="message" style="width: 100%; font-size: 4rem">Hello World Hello World</marquee>
                     </div>
                 </div>
+            </div>
+            <div id="template-black" class="brism-sign-board" style="display: block">
             </div>
         </div>
-
         <p style="width: 100%; text-align: right; margin-top: 1.5em; color: #3c3c3c">I-ON Communications Co, LTD</p>
     </div>
 </div>
